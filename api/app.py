@@ -124,7 +124,39 @@ async def get_temp_data(size: int = None):
 # to post temp data from esp to "data" database
 @app.post("/sensorData", status_code=201)
 async def create_sensor_data(data: sensorData):
-    new_entry = await db["data"].insert_one(data.model_dump())
+    current_time = datetime.now().strftime("%d/%m/%Y, %I:%M:%S %p")
+    data_info = data.model_dump()
+    data_info["datetime"] = current_time
+    new_entry = await db["data"].insert_one(data_info)
     created_entry = await db["data"].find_one({"_id": new_entry.inserted_id})
 
     return sensorData(**created_entry)
+
+@app.get("/sensorData", status_code=200)
+async def turn_on_components():
+    data = await db["data"].find().to_list(999)
+    last = len(data) - 1
+
+    sensor_data = data[last]
+
+    settings = await db["settings"].find().to_list(999)
+    
+    user_setting = settings[0]
+
+    return_sensor_data = {
+        "fan",
+        "light"
+    }
+
+    if ((sensor_data["temperature"] >= user_setting["user_temp"]) & (sensor_data["presence"] == True)):
+        return_sensor_data["fan"] = True
+    else:
+        return_sensor_data["fan"] = False
+
+    if ((user_setting["user_light"] == sensor_data["datetime"]) & (sensor_data["presence"] == True)):
+        return_sensor_data["light"] = True
+    else: 
+        if (user_setting["light_time_off"] == sensor_data["datetime"]):
+            return_sensor_data["light"] = False
+
+    return return_sensor_data

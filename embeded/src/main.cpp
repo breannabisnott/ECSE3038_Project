@@ -10,18 +10,17 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
 
-void get_sensor_data(float temp){
+void post_sensor_data(float temp, bool presence){
   HTTPClient http;
   String requestBody;
 
   http.begin(endpoint);
   http.addHeader("Content-Type", "application/json");
-  http.addHeader ("Content-Length","62");
-  http.addHeader("api-key", api_key);
 
   JsonDocument doc;
 
   doc["temp"] = temp;
+  doc["presence"] = presence;
 
   doc.shrinkToFit();
 
@@ -37,15 +36,10 @@ void get_sensor_data(float temp){
   http.end();
 }
 
-void getLight(){
+void get_sensor_data(){
   HTTPClient http;
 
-  String newEndpoint;
-  String path = "/api/light";
-  newEndpoint = endpoint + path;    //change path
-
-  http.begin(newEndpoint);
-  http.addHeader("api-key", api_key);
+  http.begin(endpoint);
 
   int httpResponseCode = http.GET();
 
@@ -65,8 +59,10 @@ void getLight(){
       return;
     }
 
-    bool light = doc["light"];
-    digitalWrite(LED, light);
+    bool fanStat = doc["fan"];
+    digitalWrite(fan, fanStat);
+    bool lightStat = doc["light"];
+    digitalWrite(light, lightStat);
   }
   else{
     Serial.print("Error code: ");
@@ -74,7 +70,6 @@ void getLight(){
   }
   http.end();
 }
-
 
 void setup() {
   Serial.begin(9600);
@@ -91,15 +86,30 @@ void setup() {
   Serial.println("");
   Serial.print("Connected to WiFi network with IP Address: ");
   Serial.println(WiFi.localIP());
-  pinMode(LED, OUTPUT);
+
+  // configure fan and light as output pins
+  pinMode(fan, OUTPUT);
+  pinMode(light, OUTPUT);
 }
 
 void loop() {
   //Check WiFi connection status
   if(WiFi.status()== WL_CONNECTED){
+    // temperature data
     sensors.requestTemperatures();
-    float x = sensors.getTempCByIndex(0);
-    get_sensor_data(x);
+    float t = sensors.getTempCByIndex(0);
+
+    // motion data
+    bool p;
+    pirStat = digitalRead(pirPin);
+    if(pirStat == HIGH){
+      p = true;
+    }else{
+      p = false;
+    }
+    
+    post_sensor_data(t, p);
+    get_sensor_data();
   }
   else {
     Serial.println("WiFi Disconnected");

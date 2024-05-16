@@ -1,6 +1,9 @@
 const char* ssid = "LIVING IRVIN HALL GUEST";
 const char* password = "Resident2020@138sl";
-String endpoint = "http://127.0.0.1:8000/sensorData";
-const char* api_key = "Clarence#3507";
+String endpoint = "https://ecse3038-project-bb.onrender.com/sensorData";
+
 #define ONE_WIRE_BUS 4
-#define LED 13
+#define pirPin 15
+#define fan 23
+#define light 22
+int pirStat = 0;
