@@ -135,8 +135,9 @@ async def create_sensor_data(data: sensorData):
 @app.get("/sensorData", status_code=200)
 async def turn_on_components():
     data = await db["data"].find().to_list(999)
-    last = len(data) - 1
 
+    # to use last entry in database
+    last = len(data) - 1
     sensor_data = data[last]
 
     settings = await db["settings"].find().to_list(999)
@@ -148,13 +149,17 @@ async def turn_on_components():
         "light"
     }
 
+    # if temperature is hotter or equal to slated temperature AND someone in the room, turn on the fan
     if ((sensor_data["temperature"] >= user_setting["user_temp"]) & (sensor_data["presence"] == True)):
         return_sensor_data["fan"] = True
+    # otherwise, it should be off
     else:
         return_sensor_data["fan"] = False
 
+    # if current time is equal to the slated turn on time AND somone in the room, turn on light
     if ((user_setting["user_light"] == sensor_data["datetime"]) & (sensor_data["presence"] == True)):
         return_sensor_data["light"] = True
+    # otherwise, keep previous state, UNLESS slated turn off time is equal to turn off time, then turn off light
     else: 
         if (user_setting["light_time_off"] == sensor_data["datetime"]):
             return_sensor_data["light"] = False
