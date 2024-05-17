@@ -144,24 +144,69 @@ async def turn_on_components():
     
     user_setting = settings[0]
 
-    return_sensor_data = {
-        "fan",
-        "light"
-    }
+    # if someone is in the room, should stuff turn on?
+    if (sensor_data["presence"] == True):
+        # if temperature is hotter or equal to slated temperature, turn on fan
+        if (sensor_data["temperature"] >= user_setting["user_temp"]):
+            fanState = True
+        # else, turn it off
+        else:
+            fanState = False
 
-    # if temperature is hotter or equal to slated temperature AND someone in the room, turn on the fan
-    if ((sensor_data["temperature"] >= user_setting["user_temp"]) & (sensor_data["presence"] == True)):
-        return_sensor_data["fan"] = True
-    # otherwise, it should be off
+        # if current time is equal to the slated turn on time, turn on light
+        if (user_setting["user_light"] == sensor_data["datetime"]):
+            lightState =  True
+    
+        else:
+            on_check = await db["data"].find_one({"datetime": user_setting["user_light"]})
+            off_check = await db["data"].find_one({"datetime": user_setting["light_time_off"]})
+            
+            # if current time is equal to the slated turn off time, turn off light
+            if (user_setting["light_time_off"] == sensor_data["datetime"]):
+                lightState =  False
+            else:
+                # if a previous current time matches with the setting OFF time, that means the light off time has passed and light should be off
+                if(off_check != ""):
+                    lightState = False
+                # if off time has NOT passed, check if ON time has passed
+                else:
+                    # if a previous current time matches with the setting time, that means the light was on but hasn't turn off yet, therefore must be on
+                    if(on_check != ""):
+                        lightState = True
+                    # otherwise, the turn on time hasn't come, light must be off
+                    else:
+                        lightState = False
+
+
+        return_sensor_data = {
+        "fan": fanState,
+        "light": lightState
+        }
+
+    # if no one in room, everything off
     else:
-        return_sensor_data["fan"] = False
-
-    # if current time is equal to the slated turn on time AND somone in the room, turn on light
-    if ((user_setting["user_light"] == sensor_data["datetime"]) & (sensor_data["presence"] == True)):
-        return_sensor_data["light"] = True
-    # otherwise, keep previous state, UNLESS slated turn off time is equal to turn off time, then turn off light
-    else: 
-        if (user_setting["light_time_off"] == sensor_data["datetime"]):
-            return_sensor_data["light"] = False
-
+        return_sensor_data = {
+        "fan": False,
+        "light": False
+    }
     return return_sensor_data
+
+    # return_sensor_data = {
+    #     "fan": False,
+    #     "light": False
+    # }
+
+    # # if temperature is hotter or equal to slated temperature AND someone in the room, turn on the fan
+    # if ((sensor_data["temperature"] >= user_setting["user_temp"]) & (sensor_data["presence"] == True)):
+    #     return_sensor_data["fan"] = True
+    # # otherwise, it should be off
+    # else:
+    #     return_sensor_data["fan"] = False
+
+    # # if current time is equal to the slated turn on time AND somone in the room, turn on light
+    # if ((user_setting["user_light"] == sensor_data["datetime"]) & (sensor_data["presence"] == True)):
+    #     return_sensor_data["light"] = True
+    # # otherwise, keep previous state, UNLESS slated turn off time is equal to turn off time, then turn off light
+    # else: 
+    #     if (user_setting["light_time_off"] == sensor_data["datetime"]):
+    #         return_sensor_data["light"] = False

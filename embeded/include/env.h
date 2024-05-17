@@ -5,5 +5,5 @@ String endpoint = "https://ecse3038-project-bb.onrender.com/sensorData";
 #define ONE_WIRE_BUS 4
 #define pirPin 15
 #define fan 23
-#define light 22
+#define light 12
 int pirStat = 0;

@@ -10,31 +10,31 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
 
-void post_sensor_data(float temp, bool presence){
-  HTTPClient http;
-  String requestBody;
+// void post_sensor_data(float temp, bool presence){
+//   HTTPClient http;
+//   String requestBody;
 
-  http.begin(endpoint);
-  http.addHeader("Content-Type", "application/json");
+//   http.begin(endpoint);
+//   http.addHeader("Content-Type", "application/json");
 
-  JsonDocument doc;
+//   JsonDocument doc;
 
-  doc["temp"] = temp;
-  doc["presence"] = presence;
+//   doc["temp"] = temp;
+//   doc["presence"] = presence;
 
-  doc.shrinkToFit();
+//   doc.shrinkToFit();
 
-  serializeJson(doc, requestBody);
+//   serializeJson(doc, requestBody);
 
-  int httpResponseCode = http.PUT(requestBody);
+//   int httpResponseCode = http.PUT(requestBody);
 
-  Serial.print("HERE IS THE RESPONSE: ");
-  Serial.println(requestBody);
-  Serial.println(http.getString());
-  Serial.println();
+//   Serial.print("HERE IS THE RESPONSE: ");
+//   Serial.println(requestBody);
+//   Serial.println(http.getString());
+//   Serial.println();
 
-  http.end();
-}
+//   http.end();
+// }
 
 void get_sensor_data(){
   HTTPClient http;
@@ -96,19 +96,20 @@ void loop() {
   //Check WiFi connection status
   if(WiFi.status()== WL_CONNECTED){
     // temperature data
-    sensors.requestTemperatures();
-    float t = sensors.getTempCByIndex(0);
+    // sensors.requestTemperatures();
+    // float t = sensors.getTempCByIndex(0);
 
-    // motion data
-    bool p;
-    pirStat = digitalRead(pirPin);
-    if(pirStat == HIGH){
-      p = true;
-    }else{
-      p = false;
-    }
+    // // motion data
+    // bool p;
+    // pirStat = digitalRead(pirPin);
+    // if(pirStat == HIGH){
+    //   p = true;
+    // }else{
+    //   p = false;
+    // }
     
-    post_sensor_data(t, p);
+    // post_sensor_data(t, p);
+    // post_sensor_data(5, true);
     get_sensor_data();
   }
   else {
