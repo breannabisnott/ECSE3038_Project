@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-origins=["*"]
+origins=["https://simple-smart-hub-client.netlify.app/"]
 
 
 app.add_middleware(
