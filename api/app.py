@@ -70,7 +70,7 @@ def get_sunset_time():
     sunset = country_data["results"]["sunset"]
 
     # convert to 24 hr format
-    user_sunset = datetime.strptime(sunset, '%I:%M:%S %p')
+    user_sunset = datetime.strptime(sunset, '%H:%M:%S')
 
     return user_sunset.strftime('%H:%M:%S')
 
@@ -124,7 +124,7 @@ async def get_temp_data(size: int = None):
 # to post temp data from esp to "data" database
 @app.post("/sensorData", status_code=201)
 async def create_sensor_data(data: sensorData):
-    current_time = datetime.now().strftime("%d/%m/%Y, %I:%M:%S %p")
+    current_time = datetime.now().strftime("%H:%M:%S")
     data_info = data.model_dump()
     data_info["datetime"] = current_time
     new_entry = await db["data"].insert_one(data_info)
@@ -190,23 +190,3 @@ async def turn_on_components():
         "light": False
     }
     return return_sensor_data
-
-    # return_sensor_data = {
-    #     "fan": False,
-    #     "light": False
-    # }
-
-    # # if temperature is hotter or equal to slated temperature AND someone in the room, turn on the fan
-    # if ((sensor_data["temperature"] >= user_setting["user_temp"]) & (sensor_data["presence"] == True)):
-    #     return_sensor_data["fan"] = True
-    # # otherwise, it should be off
-    # else:
-    #     return_sensor_data["fan"] = False
-
-    # # if current time is equal to the slated turn on time AND somone in the room, turn on light
-    # if ((user_setting["user_light"] == sensor_data["datetime"]) & (sensor_data["presence"] == True)):
-    #     return_sensor_data["light"] = True
-    # # otherwise, keep previous state, UNLESS slated turn off time is equal to turn off time, then turn off light
-    # else: 
-    #     if (user_setting["light_time_off"] == sensor_data["datetime"]):
-    #         return_sensor_data["light"] = False
