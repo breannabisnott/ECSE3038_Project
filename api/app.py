@@ -1,6 +1,6 @@
 from datetime import datetime, time, timedelta
 from typing import Annotated, List, Optional
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Response, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, BeforeValidator, TypeAdapter, Field
 import uuid
@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-origins=["https://simple-smart-hub-client.netlify.app"]
+origins=["*"]
 
 
 app.add_middleware(
