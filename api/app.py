@@ -116,7 +116,7 @@ class sensorData(BaseModel):
     datetime: Optional[str] = None
 
 # get request to collect environmental data from ESP
-@app.get("/graph")
+@app.get("/graph", status_code=200)
 async def get_temp_data(size: int = None):
     data = await db["data"].find().to_list(size)
     return TypeAdapter(List[sensorData]).validate_python(data)
@@ -144,7 +144,7 @@ async def turn_on_fan():
     
     user_setting = settings[0]
 
-    # if someone is in the room, should stuff turn on?
+    # if someone is in the room, turn stuff on
     if (sensor_data["presence"] == True):
         # if temperature is hotter or equal to slated temperature, turn on fan
         if (sensor_data["temperature"] >= user_setting["user_temp"]):
