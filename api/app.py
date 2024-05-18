@@ -132,8 +132,8 @@ async def create_sensor_data(data: sensorData):
 
     return sensorData(**created_entry)
 
-@app.get("/sensorData", status_code=200)
-async def turn_on_components():
+@app.get("/fan", status_code=200)
+async def turn_on_fan():
     data = await db["sensorData"].find().to_list(999)
 
     # to use last entry in database
@@ -152,41 +152,48 @@ async def turn_on_components():
         # else, turn it off
         else:
             fanState = False
+    else:
+        fanState = False
 
-        # if current time is equal to the slated turn on time, turn on light
+    return_fan_data = {
+    "fan": fanState,
+    }
+
+    return return_fan_data
+
+@app.get("/light", status_code=200)
+async def turn_on_light():
+    data = await db["sensorData"].find().to_list(999)
+
+    # to use last entry in database
+    last = len(data) - 1
+    sensor_data = data[last]
+
+    settings = await db["settings"].find().to_list(999)
+    
+    user_setting = settings[0]
+
+    # if someone is in the room, should stuff turn on?
+    if (sensor_data["presence"] == True):
+       # if current time is equal to the slated turn on time, turn on light
         if (user_setting["user_light"] == sensor_data["datetime"]):
             lightState =  True
-    
         else:
-            on_check = await db["data"].find_one({"datetime": user_setting["user_light"]})
-            off_check = await db["data"].find_one({"datetime": user_setting["light_time_off"]})
+            # convert from string to datetime
+            current_time = datetime.strptime(sensor_data["datetime"], "%H:%M:%S")
+            on_time = datetime.strptime(user_setting["user_light"], "%H:%M:%S")
+            off_time = datetime.strptime(user_setting["light_time_off"], "%H:%M:%S")
             
-            # if current time is equal to the slated turn off time, turn off light
-            if (user_setting["light_time_off"] == sensor_data["datetime"]):
-                lightState =  False
+            # if in duration range light should be on
+            if((current_time > on_time) & (current_time < off_time)):
+                lightState = True
             else:
-                # if a previous current time matches with the setting OFF time, that means the light off time has passed and light should be off
-                if(off_check != ""):
-                    lightState = False
-                # if off time has NOT passed, check if ON time has passed
-                else:
-                    # if a previous current time matches with the setting time, that means the light was on but hasn't turn off yet, therefore must be on
-                    if(on_check != ""):
-                        lightState = True
-                    # otherwise, the turn on time hasn't come, light must be off
-                    else:
-                        lightState = False
-
-
-        return_sensor_data = {
-        "fan": fanState,
-        "light": lightState
-        }
-
-    # if no one in room, everything off
+                lightState = False
     else:
-        return_sensor_data = {
-        "fan": False,
-        "light": False
+        lightState = False
+
+    return_light_data = {
+    "light": lightState,
     }
-    return return_sensor_data
+
+    return return_light_data

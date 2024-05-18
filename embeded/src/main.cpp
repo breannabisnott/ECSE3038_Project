@@ -138,6 +138,7 @@ void setup() {
   // configure fan and light as output pins
   pinMode(fan, OUTPUT);
   pinMode(light, OUTPUT);
+  pinMode(pirPin, INPUT);
 }
 
 void loop() {
