@@ -15,7 +15,7 @@ import requests
 config = dotenv_values(".env")
 
 client = motor.motor_asyncio.AsyncIOMotorClient(config["MONGO_URL"])
-db = client.settings_data
+db = client.ECSE3038_Project_Database
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -127,14 +127,14 @@ async def create_sensor_data(data: sensorData):
     current_time = datetime.now().strftime("%H:%M:%S")
     data_info = data.model_dump()
     data_info["datetime"] = current_time
-    new_entry = await db["data"].insert_one(data_info)
-    created_entry = await db["data"].find_one({"_id": new_entry.inserted_id})
+    new_entry = await db["sensorData"].insert_one(data_info)
+    created_entry = await db["sensorData"].find_one({"_id": new_entry.inserted_id})
 
     return sensorData(**created_entry)
 
 @app.get("/sensorData", status_code=200)
 async def turn_on_components():
-    data = await db["data"].find().to_list(999)
+    data = await db["sensorData"].find().to_list(999)
 
     # to use last entry in database
     last = len(data) - 1
