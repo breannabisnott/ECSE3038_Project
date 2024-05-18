@@ -6,13 +6,7 @@
 #include <DallasTemperature.h>
 #include "env.h"
 
-#define ONE_WIRE_BUS 4
-#define pirPin 15
-#define fan 23
-#define light 12
 int pirStat = 0;
-
-String endpoint = "https://ecse3038-project-bb.onrender.com/sensorData";
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
