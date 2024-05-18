@@ -44,10 +44,14 @@ void post_sensor_data(float temp, bool presence){
   http.end();
 }
 
-void get_sensor_data(){
+void get_fan_data(){
   HTTPClient http;
 
-  http.begin(endpoint);
+  String newEndpoint;
+  String path = "/fan";
+  newEndpoint = endpoint + path;    //change path
+
+  http.begin(newEndpoint);
 
   int httpResponseCode = http.GET();
 
@@ -69,6 +73,42 @@ void get_sensor_data(){
 
     bool fanStat = doc["fan"];
     digitalWrite(fan, fanStat);
+    
+  }
+  else{
+    Serial.print("Error code: ");
+    Serial.println(httpResponseCode);
+  }
+  http.end();
+}
+
+void get_light_data(){
+  HTTPClient http;
+
+  String newEndpoint;
+  String path = "/light";
+  newEndpoint = endpoint + path;    //change path
+
+  http.begin(newEndpoint);
+
+  int httpResponseCode = http.GET();
+
+  if(httpResponseCode > 0) {
+    Serial.print("HTTP Response code: ");
+    Serial.println(httpResponseCode);
+
+    String responseBody = http.getString();
+    Serial.println(responseBody);
+
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, responseBody);
+
+    if (error) {
+      Serial.print("deserializeJson() failed: ");
+      Serial.println(error.c_str());
+      return;
+    }
+
     bool lightStat = doc["light"];
     digitalWrite(light, lightStat);
   }
@@ -117,8 +157,11 @@ void loop() {
     }
     
     post_sensor_data(t, p);
-    post_sensor_data(5, true);
-    get_sensor_data();
+    delay(5000);
+    
+    get_fan_data();
+    get_light_data();
+    delay(5000);
   }
   else {
     Serial.println("WiFi Disconnected");
