@@ -16,7 +16,11 @@ void post_sensor_data(float temp, bool presence){
   HTTPClient http;
   String requestBody;
 
-  http.begin(endpoint);
+  String newEndpoint;
+  String path = "/sensorData";
+  newEndpoint = endpoint + path;    //change path
+
+  http.begin(newEndpoint);
   http.addHeader("Content-Type", "application/json");
 
   JsonDocument doc;
@@ -28,7 +32,7 @@ void post_sensor_data(float temp, bool presence){
 
   serializeJson(doc, requestBody);
 
-  int httpResponseCode = http.PUT(requestBody);
+  int httpResponseCode = http.POST(requestBody);
 
   Serial.print("HERE IS THE RESPONSE: ");
   Serial.println(requestBody);

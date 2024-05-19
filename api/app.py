@@ -118,7 +118,7 @@ class sensorData(BaseModel):
 # get request to collect environmental data from ESP
 @app.get("/graph", status_code=200)
 async def get_temp_data(size: int = None):
-    data = await db["data"].find().to_list(size)
+    data = await db["sensorData"].find().to_list(size)
     return TypeAdapter(List[sensorData]).validate_python(data)
 
 # to post temp data from esp to "data" database
